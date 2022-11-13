@@ -23,6 +23,11 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView display1, display2, display3;
     private RadioGroup simSelector;
     private RadioButton sim1, sim2, selectedSim;
-    private String carrier, carrier1, carrier2, activeCarrier;
+    private String carrier, carrier1, carrier2, activeCarrier, providers, shortCode, on, off;
 
 
     @Override
@@ -68,10 +73,18 @@ public class MainActivity extends AppCompatActivity {
                 simChanged();
             }
         });
+
+        fill_Display3("The active carrier is: " + activeCarrier);
+        fill_Display2(providers);
     }
 
 
     private void startUp() {
+        try {
+            getProviders();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         simChanged();
 
 
@@ -82,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         initialiseSims();
         int simIndex = simSelector.getCheckedRadioButtonId();
         simSlot = 0;
-        if (simCount > 1) {
+        if (simCount > 1 && simIndex != -1) {
             selectedSim = findViewById(simIndex);
             activeSim = parseInt((String) selectedSim.getTag());
             simSlot = activeSim + 1;
@@ -107,10 +120,39 @@ public class MainActivity extends AppCompatActivity {
         } else {
             smsManager = SmsManager.getDefault();
             activeCarrier = carrier;
-
         }
 
-        fill_Display1(activeCarrier);
+        setactiveSimProperties();
+        fill_Display3("There was a sim change \nThe new active carrier is: " + activeCarrier);
+    }
+
+
+    private void setactiveSimProperties(){
+        String dCarrier = "" ;
+        if (activeCarrier != "" && activeCarrier != null){
+            if(activeCarrier.contains(" ")){
+                dCarrier = activeCarrier.split(" ")[0].toUpperCase();
+            } else if(activeCarrier.contains("-")){
+                dCarrier = activeCarrier.split("-")[0].toUpperCase();
+            } else {
+                dCarrier = activeCarrier.toUpperCase();
+            }
+        }
+
+        dCarrier = dCarrier.replaceAll("\\s", "");
+        String[] providersList = providers.split("\n"), line;
+        String prov, others="";
+        for (String s: providersList){
+            line = s.split("@");
+            prov = line[0];
+            prov = prov.replaceAll("\\s", "").toUpperCase();
+            others = others + "\n" + prov + " @ " + dCarrier;
+            if (prov.equals(dCarrier)){
+                shortCode = line[1];
+                on = line[2];
+                off = line[3];
+            }
+        }
     }
 
     private void initialiseSims() {
@@ -123,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
         }
         simCount = subsManager.getActiveSubscriptionInfoCount();
         //fill_Display1("Sim count is " + simCount);
-        fill_Display2("Maximum sim count is " + maxSimCount);
+        //fill_Display2("Maximum sim count is " + maxSimCount);
         List list = subsManager.getActiveSubscriptionInfoList();
         if (simCount > 1){
             subsInfo1 = (SubscriptionInfo) list.get(0);
@@ -150,6 +192,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private void getProviders() throws IOException {
+        InputStream is = getResources().openRawResource(R.raw.demo_text);
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+        int counter = 0;
+        while ((line = br.readLine()) != null) {
+            counter++;
+            if (counter == 1){
+                providers = line;
+            }else{
+                providers = providers + "\n" + line;
+            }
+        }
+    }
 
     // Requests for permissions
     private void getPermissions(){
