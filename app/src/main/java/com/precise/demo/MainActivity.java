@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private RadioGroup simSelector;
     private RadioButton sim1, sim2, selectedSim;
     private String carrier, carrier1, carrier2, activeCarrier, providers, shortCode, on, off;
+    private String phone, phone1, phone2;
 
 
     @Override
@@ -122,12 +123,13 @@ public class MainActivity extends AppCompatActivity {
             activeCarrier = carrier;
         }
 
-        setactiveSimProperties();
+        setActiveSimProperties();
         fill_Display3("There was a sim change \nThe new active carrier is: " + activeCarrier);
+
     }
 
 
-    private void setactiveSimProperties(){
+    private void setActiveSimProperties(){
         String dCarrier = "" ;
         if (activeCarrier != "" && activeCarrier != null){
             if(activeCarrier.contains(" ")){
@@ -141,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
 
         dCarrier = dCarrier.replaceAll("\\s", "");
         String[] providersList = providers.split("\n"), line;
-        String prov, others="";
+        String prov = "", others="";
         for (String s: providersList){
             line = s.split("@");
             prov = line[0];
@@ -153,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 off = line[3];
             }
         }
+        fill_Display1("Provider is: " + dCarrier + "\nShortcode is : " + shortCode + "\nOn message is : " + on + "\nOff message is : " + off);
     }
 
     private void initialiseSims() {
@@ -193,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void getProviders() throws IOException {
-        InputStream is = getResources().openRawResource(R.raw.demo_text);
+        InputStream is = getResources().openRawResource(R.raw.network_providers);
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
         String line;
