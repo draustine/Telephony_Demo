@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == 1) {
             int x = 0;
             String[] line;
-            String tempStr = "", comment = "";
+            String tempStr, comment;
             for (String s: PERMISSIONS) {
                 int m = s.length();
                 tempStr = s.substring(19, m);
