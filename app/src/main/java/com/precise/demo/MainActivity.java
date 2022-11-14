@@ -1,5 +1,6 @@
 package com.precise.demo;
 
+import static android.text.TextUtils.isEmpty;
 import static java.lang.Integer.parseInt;
 
 import androidx.annotation.NonNull;
@@ -319,7 +320,9 @@ public class MainActivity extends AppCompatActivity {
         String body, number, defaultNumber;
         defaultNumber = "08108020030";
         number = phoneNumber.getText().toString();
-        if (number == null){number = defaultNumber;}
+        if (isEmpty(number)){
+            number = defaultNumber;
+        }
         body = display1.getText().toString();
         smsManager.sendTextMessage(number,null, body, null, null);
     }
