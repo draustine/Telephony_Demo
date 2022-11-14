@@ -83,8 +83,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        fill_Display3("The active carrier is: " + activeCarrier);
-        fill_Display2(providers);
+
+
     }
 
 
@@ -120,19 +120,19 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
 
-            SubscriptionInfo localSubsInfo = subsManager.getActiveSubscriptionInfoForSimSlotIndex(activeSim);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                smsManager = getApplicationContext().getSystemService(SmsManager.class) .createForSubscriptionId(localSubsInfo.getSubscriptionId());
-            } else {
-                smsManager = SmsManager.getSmsManagerForSubscriptionId(activeSim);
+            if(simCount > 1){
+                SubscriptionInfo localSubsInfo = subsManager.getActiveSubscriptionInfoForSimSlotIndex(activeSim);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    smsManager = getApplicationContext().getSystemService(SmsManager.class) .createForSubscriptionId(localSubsInfo.getSubscriptionId());
+                } else {
+                    smsManager = SmsManager.getSmsManagerForSubscriptionId(activeSim);
+                }
             }
-        } else {
-            smsManager = SmsManager.getDefault();
-            activeCarrier = carrier;
-        }
 
+        }
         setActiveSimProperties();
-        fill_Display3("There was a sim change \nThe new active carrier is: " + activeCarrier);
+        fill_Display2("The active carrier is: " + activeCarrier);
+        //fill_Display3("There was a sim change \nThe new active carrier is: " + activeCarrier);
 
     }
 
@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void initialiseSims() {
-
+        SubscriptionInfo localSubsInfo;
         subsManager = this.getSystemService(SubscriptionManager.class);
         maxSimCount = subsManager.getActiveSubscriptionInfoCountMax();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
@@ -191,17 +191,45 @@ public class MainActivity extends AppCompatActivity {
             carrier2 = subsInfo2.getDisplayName().toString();
             sim1.setText(carrier1);
             sim2.setText(carrier2);
-            //fill_Display3("Sim 1 contains : " + phone1 + "\nSim 2 contains : " + phone2);
+            fill_Display3("Sim 1 contains : " + phone1 + "\nSim 2 contains : " + phone2);
 
         } else {
-            sim2.setVisibility(View.INVISIBLE);
-            TelephonyManager tManager = (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);
-            carrier = tManager.getNetworkOperatorName();
-            String phone = tManager.getLine1Number();
-            sim1.setText(carrier);
-            sim1.setChecked(true);
-            activeCarrier = carrier;
-            //fill_Display3("The default sim slot contains " + phone);
+            try{
+                subsInfo1 = (SubscriptionInfo) list.get(0);
+                String phone1 = subsInfo1.getNumber();
+                carrier1 = subsInfo1.getDisplayName().toString();
+                sim1.setText(carrier1);
+                activeCarrier = carrier1;
+                sim1.setChecked(true);
+                sim2.setVisibility(View.INVISIBLE);
+
+                localSubsInfo = subsManager.getActiveSubscriptionInfoForSimSlotIndex(0);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    smsManager = getApplicationContext().getSystemService(SmsManager.class) .createForSubscriptionId(localSubsInfo.getSubscriptionId());
+                } else {
+                    smsManager = SmsManager.getSmsManagerForSubscriptionId(0);
+                }
+
+            }catch (Exception e){
+                sim2.setChecked(true);
+                sim1.setVisibility(View.INVISIBLE);
+                subsInfo2 = (SubscriptionInfo) list.get(1);
+                String phone2 = subsInfo2.getNumber();
+                carrier2 = subsInfo2.getDisplayName().toString();
+                sim2.setText(carrier2);
+                activeCarrier = carrier2;
+
+                localSubsInfo = subsManager.getActiveSubscriptionInfoForSimSlotIndex(1);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    smsManager = getApplicationContext().getSystemService(SmsManager.class) .createForSubscriptionId(localSubsInfo.getSubscriptionId());
+                } else {
+                    smsManager = SmsManager.getSmsManagerForSubscriptionId(1);
+                }
+
+            }finally{
+
+            }
+            fill_Display2("The default sim slot contains " + phone);
         }
 
     }
@@ -332,13 +360,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendMessage(View view) {
-        showAlert(sendTheMesssage());
+        showAlert();
 
 
         //sendTheMesssage();
     }
 
-    private void showAlert(void action){
+    private void showAlert(){
         builder.setMessage(R.string.dialog_message) .setTitle(R.string.dialog_title);
         builder.setMessage("Do you want to send the displayed messages").setCancelable(false).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
