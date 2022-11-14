@@ -194,6 +194,26 @@ public class MainActivity extends AppCompatActivity {
             fill_Display3("Sim 1 contains : " + phone1 + "\nSim 2 contains : " + phone2);
 
         } else {
+            localSubsInfo = subsManager.getActiveSubscriptionInfo(SubscriptionManager.getDefaultSmsSubscriptionId());
+            activeCarrier = localSubsInfo.getDisplayName().toString();
+            int slot = localSubsInfo.getSimSlotIndex();
+            simSlot = slot + 1;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                smsManager = getApplicationContext().getSystemService(SmsManager.class);
+            } else {
+                smsManager = SmsManager.getSmsManagerForSubscriptionId(localSubsInfo.getSubscriptionId());
+            }
+
+            if(simSlot == 1){
+                sim1.setText(activeCarrier);
+                sim1.setChecked(true);
+                sim2.setVisibility(View.INVISIBLE);
+            }else{
+                sim2.setText(activeCarrier);
+                sim2.setChecked(true);
+                sim1.setVisibility(View.INVISIBLE);
+            }
+            /*
             try{
                 subsInfo1 = (SubscriptionInfo) list.get(0);
                 String phone1 = subsInfo1.getNumber();
@@ -213,22 +233,25 @@ public class MainActivity extends AppCompatActivity {
             }catch (Exception e){
                 sim2.setChecked(true);
                 sim1.setVisibility(View.INVISIBLE);
+                subsInfo2 = subsManager.getActiveSubscriptionInfo(SubscriptionManager.getDefaultSubscriptionId());
                 subsInfo2 = (SubscriptionInfo) list.get(1);
                 String phone2 = subsInfo2.getNumber();
                 carrier2 = subsInfo2.getDisplayName().toString();
                 sim2.setText(carrier2);
                 activeCarrier = carrier2;
 
-                localSubsInfo = subsManager.getActiveSubscriptionInfoForSimSlotIndex(1);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    smsManager = getApplicationContext().getSystemService(SmsManager.class) .createForSubscriptionId(localSubsInfo.getSubscriptionId());
+                    smsManager = getApplicationContext().getSystemService(SmsManager.class);
                 } else {
                     smsManager = SmsManager.getSmsManagerForSubscriptionId(1);
+
                 }
 
             }finally{
 
             }
+
+             */
             fill_Display2("The default sim slot contains " + phone);
         }
 
@@ -371,7 +394,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setMessage("Do you want to send the displayed messages").setCancelable(false).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        finish();
+                        sendTheMesssage();
                         Toast.makeText(getApplicationContext(),"You selected yes", Toast.LENGTH_LONG).show();
                     }
                 })
