@@ -4,11 +4,13 @@ import static android.text.TextUtils.isEmpty;
 import static java.lang.Integer.parseInt;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private RadioButton sim1, sim2, selectedSim;
     private String carrier, carrier1, carrier2, activeCarrier, providers, shortCode, on, off;
     private String phone, phone1, phone2;
+    private AlertDialog.Builder builder;
 
 
     @Override
@@ -58,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         sim2 = findViewById(R.id.sim2);
         simSelector = findViewById(R.id.simSelector);
         phoneNumber = findViewById(R.id.phoneNumber);
+        builder = new AlertDialog.Builder(this);
 
         PERMISSIONS = new String[]{
                 Manifest.permission.INTERNET,
@@ -328,6 +332,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendMessage(View view) {
-        sendTheMesssage();
+        showAlert(sendTheMesssage());
+
+
+        //sendTheMesssage();
+    }
+
+    private void showAlert(void action){
+        builder.setMessage(R.string.dialog_message) .setTitle(R.string.dialog_title);
+        builder.setMessage("Do you want to send the displayed messages").setCancelable(false).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        finish();
+                        Toast.makeText(getApplicationContext(),"You selected yes", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //  Action for 'NO' Button
+                        dialog.cancel();
+                        Toast.makeText(getApplicationContext(),"you choose no action for alertbox",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        AlertDialog alert = builder.create();
+        alert.setTitle("Alert Dialog Example");
+        alert.show();
     }
 }
