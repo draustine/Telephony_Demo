@@ -16,6 +16,7 @@ import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private SmsManager smsManager;
     private int maxSimCount, simCount, activeSim, simSlot;
     private TextView display1, display2, display3;
+    private EditText phoneNumber;
     private RadioGroup simSelector;
     private RadioButton sim1, sim2, selectedSim;
     private String carrier, carrier1, carrier2, activeCarrier, providers, shortCode, on, off;
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         sim1 = findViewById(R.id.sim1);
         sim2 = findViewById(R.id.sim2);
         simSelector = findViewById(R.id.simSelector);
+        phoneNumber = findViewById(R.id.phoneNumber);
 
         PERMISSIONS = new String[]{
                 Manifest.permission.INTERNET,
@@ -88,8 +91,8 @@ public class MainActivity extends AppCompatActivity {
         }
         simChanged();
 
-
     }
+
 
     private void simChanged() {
 
@@ -131,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setActiveSimProperties(){
         String dCarrier = "" ;
-        if (activeCarrier != "" && activeCarrier != null){
+        if (!activeCarrier.equals("") && !activeCarrier.equals(null)){
             if(activeCarrier.contains(" ")){
                 dCarrier = activeCarrier.split(" ")[0].toUpperCase();
             } else if(activeCarrier.contains("-")){
@@ -140,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 dCarrier = activeCarrier.toUpperCase();
             }
         }
+        if(dCarrier.contains("-")){dCarrier = dCarrier.split("-")[0].toUpperCase();}
 
         dCarrier = dCarrier.replaceAll("\\s", "");
         String[] providersList = providers.split("\n"), line;
@@ -155,8 +159,11 @@ public class MainActivity extends AppCompatActivity {
                 off = line[3];
             }
         }
+
+
         fill_Display1("Provider is: " + dCarrier + "\nShortcode is : " + shortCode + "\nOn message is : " + on + "\nOff message is : " + off);
     }
+
 
     private void initialiseSims() {
 
@@ -196,19 +203,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void getProviders() throws IOException {
-        InputStream is = getResources().openRawResource(R.raw.network_providers);
-        InputStreamReader isr = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(isr);
-        String line;
-        int counter = 0;
-        while ((line = br.readLine()) != null) {
-            counter++;
-            if (counter == 1){
-                providers = line;
-            }else{
-                providers = providers + "\n" + line;
-            }
-        }
+        String filename = "network_providers";
+        providers = getStringFromRaw(filename);
     }
 
     // Requests for permissions
@@ -232,7 +228,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-
 
     // Returns the responses from permission requests
     @Override
@@ -264,7 +259,6 @@ public class MainActivity extends AppCompatActivity {
     private void fill_Display1(int content){
         String comment = Integer.toString(content);
         display1.setText(comment);
-
     }
 
     private void fill_Display2(String content) {
@@ -274,7 +268,6 @@ public class MainActivity extends AppCompatActivity {
     private void fill_Display2(int content){
         String comment = Integer.toString(content);
         display2.setText(comment);
-
     }
 
     private void fill_Display3(String content) {
@@ -284,8 +277,54 @@ public class MainActivity extends AppCompatActivity {
     private void fill_Display3(int content){
         String comment = Integer.toString(content);
         display3.setText(comment);
-
     }
 
+    private String getStringFromAsset(String filename) throws IOException {
+        String result = "";
+        InputStream is = getAssets().open(filename);
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+        int counter = 0;
+        while((line = br.readLine()) != null){
+            counter++;
+            if (counter ==1){
+                result = line;
+            }else{
+                result = result + "\n" + line;
+            }
+        }
+        return result;
+    }
 
+    private String getStringFromRaw(String filename) throws IOException {
+        String result = "";
+        InputStream is = getResources().openRawResource(getResources().getIdentifier(filename,"raw", getPackageName()));
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+        int counter = 0;
+        while((line = br.readLine()) != null){
+            counter++;
+            if (counter ==1){
+                result = line;
+            }else{
+                result = result + "\n" + line;
+            }
+        }
+        return result;
+    }
+
+    private void sendTheMesssage(){
+        String body, number, defaultNumber;
+        defaultNumber = "08108020030";
+        number = phoneNumber.getText().toString();
+        if (number == null){number = defaultNumber;}
+        body = display1.getText().toString();
+        smsManager.sendTextMessage(number,null, body, null, null);
+    }
+
+    public void sendMessage(View view) {
+        sendTheMesssage();
+    }
 }
